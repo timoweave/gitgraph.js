@@ -203,7 +203,7 @@
   }
 
   /**
-   * Create new branch
+   * Create new branch if new branch
    *
    * @param {(String | Object)} options - Branch name | Options of Branch
    *
@@ -224,11 +224,71 @@
     options.parent = this;
     options.parentBranch = options.parentBranch || this.HEAD;
 
-    // Add branch
-    var branch = new Branch( options );
+    // Add branch, if it is a new branch
+    var branch = this.findBranch(options.name) || new Branch( options );
     this.branches.push( branch );
 
     // Return
+    return branch;
+  };
+
+  /**
+   * find exist branch
+   *
+   * @param {(String | Object)} options - Branch name | Options of Branch
+   *
+   * @see Branch
+   * @this GitGraph
+   *
+   * @return {Branch} exist branch
+   **/
+  GitGraph.prototype.findBranch = function ( options ) {
+    // Options
+    // console.log(options);
+    if ( typeof options === "string" ) {
+      var name = options;
+      options = {};
+      options.name = name;
+    }
+    // console.log(options);
+    return this.branches.reduce(lookForBranch(options.name), undefined);
+
+    function lookForBranch(name) {
+      return function(result, branch) {
+        // console.log("branch", branch);
+        // console.log("options", name);
+        if (branch.name === name) {
+          return branch;
+        }
+        return result;
+      }
+    }
+
+  };
+
+  /**
+   * checkout exist branch
+   *
+   * @param {(String | Object)} options - Branch name | Options of Branch
+   *
+   * @see Branch
+   * @this GitGraph
+   *
+   * @return {Branch} Exist branch
+   **/
+  GitGraph.prototype.checkout = function ( options ) {
+    // Options
+    // console.log(options);
+    if ( typeof options === "string" ) {
+      var name = options;
+      options = {};
+      options.name = name;
+    }
+    // console.log(options);
+    var branch = this.findBranch(options.name);
+    if (branch) {
+      branch.checkout();
+    }
     return branch;
   };
 
